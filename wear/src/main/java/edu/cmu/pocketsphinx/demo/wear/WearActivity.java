@@ -62,7 +62,7 @@ public class WearActivity extends Activity implements
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_REQUEST_RECORD_AUDIO);
             return;
         }
-        runRecognizerSetup();
+
     }
 
     private void runRecognizerSetup() {
