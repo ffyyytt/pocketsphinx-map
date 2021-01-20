@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <string name="app_name">Maps</string>
+    <string name="app_name">MFD</string>
     <string name="speech_prompt" translatable="false">Listenning...</string>
     <string name="speech_not_supported" translatable="false">Your Phone is not supported!</string>
     <string name="kws_caption">To start demonstration say \"oh mighty computer\".</string>

@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -72,16 +73,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     Location mLastLocation;
     Marker mCurrLocationMarker;
     LatLng mlatLng, destinationLocation;
+    String Des = "";
 
     SpeechRecognizer recognizer;
     String KWS_SEARCH = "wakeup";
-    String FORECAST_SEARCH = "forecast";
-    String DIGITS_SEARCH = "digits";
-    String PHONE_SEARCH = "phones";
-    String MENU_SEARCH = "menu";
     String KEYPHRASE = "hi";
-
-
+    String GOPHRASE = "go";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,21 +105,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     .setRawLogDir(assetDir) // To disable logging of raw audio comment out this call (takes a lot of space on the device)
                     .getRecognizer();
             recognizer.addListener(this);
-            recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
+            //recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
             File menuGrammar = new File(assetDir, "menu.gram");
-            recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
-
-            // Create grammar-based search for digit recognition
-            File digitsGrammar = new File(assetDir, "digits.gram");
-            recognizer.addGrammarSearch(DIGITS_SEARCH, digitsGrammar);
-
-            // Create language model search
-            File languageModel = new File(assetDir, "weather.dmp");
-            recognizer.addNgramSearch(FORECAST_SEARCH, languageModel);
-
-            // Phonetic search
-            File phoneticModel = new File(assetDir, "en-phone.dmp");
-            recognizer.addAllphoneSearch(PHONE_SEARCH, phoneticModel);
+            recognizer.addGrammarSearch(KWS_SEARCH, menuGrammar);
             switchSearch(KWS_SEARCH);
         } catch (IOException e) {
             e.printStackTrace();
@@ -209,7 +194,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onRoutingStart() {
-        Toast.makeText(getApplicationContext(),"Tìm kiếm đường đi!", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(),"Tìm kiếm đường đi!", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -251,7 +236,33 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             recognizer.stop();
             startSpeechToText(1);
         }
+        else if (text.equals(GOPHRASE) && !Des.equals(""))
+        {
+            final Intent intent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://maps.google.com/maps?" + "saddr="+ mlatLng.latitude + "," + mlatLng.longitude + "&daddr=" + destinationLocation.latitude + "," + destinationLocation.longitude+"&travelmode=driving&dir_action=navigate"));
+            intent.setClassName("com.google.android.apps.maps","com.google.android.maps.MapsActivity");
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            recognizer.stop();
+        }
         //Toast.makeText(getApplicationContext(),"PartialResult: "+text,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        recognizer.shutdown();
+    }
+
+    void exit()
+    {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory( Intent.CATEGORY_HOME );
+        intent.setFlags(0);
+        startActivity(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            this.finishAndRemoveTask();
+        }
     }
 
     @Override
@@ -273,6 +284,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void searchLocation(String Destinationlocation) {
+        Des = Destinationlocation;
         List<Address> addressList = null;
 
         if (Destinationlocation != null || !Destinationlocation.equals("")) {
@@ -282,6 +294,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+            if (addressList.isEmpty())
+            {
+                Toast.makeText(getApplicationContext(),"Cant find address!", Toast.LENGTH_SHORT).show();
+                return;
             }
             Address address = addressList.get(0);
             LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
@@ -298,7 +315,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     .build();
 
             routing.execute();
-            Toast.makeText(getApplicationContext(),destinationLocation.toString(),Toast.LENGTH_LONG).show();
+            //.makeText(getApplicationContext(),destinationLocation.toString(),Toast.LENGTH_LONG).show();
         }
     }
 
@@ -314,7 +331,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))).showInfoWindow();
         mMap.addMarker(new MarkerOptions().position(destinationLocation)
                 .title("destination")).showInfoWindow();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mlatLng,15));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mlatLng,14));
 
         startListen();
     }
@@ -353,6 +370,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         else
             recognizer.startListening(searchName, 10000);
 
-        Toast.makeText(getApplicationContext(),"Ready!!!",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(),"Ready!!!",Toast.LENGTH_SHORT).show();
     }
 }

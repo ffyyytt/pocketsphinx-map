@@ -11,7 +11,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/icon"
+        android:icon="@drawable/iconmfd"
         android:label="@string/app_name" >
         <meta-data
             android:name="com.google.android.geo.API_KEY"
